@@ -15,24 +15,26 @@ func main() {
 	if err != nil {
 		log.Fatal("can not listen", port)
 	}
-	fmt.Println("listening ", "port")
+	fmt.Println("listening ", port)
 
 	// connectionの受付
-	conn, err := listen.Accept()
-	if err != nil {
-		log.Fatal("can not established connection")
+	for {
+		conn, err := listen.Accept()
+		if err != nil {
+			log.Fatal("can not established connection")
+		}
+		// メモリ割り当て byte型はuint8型のエイリアス
+		buf := make([]byte, 1024)
+
+		fmt.Printf("[Remote Address]\n%s\n", conn.RemoteAddr())
+		n, err := conn.Read(buf) // nはリクエストのバイト列のサイズらしい
+		if err != nil {
+			log.Fatal("can not read request")
+		}
+		fmt.Println("n is ", n)
+		fmt.Printf("[Message]\n%s", string(buf[:n]))
+
+		conn.Write([]byte("connected!\n"))
 	}
-	// メモリ割り当て byte型はuint8型のエイリアス
-	buf := make([]byte, 1024)
-
-	fmt.Printf("[Remote Address]\n%s\n", conn.RemoteAddr())
-	n, err := conn.Read(buf) // nはリクエストのバイト列のサイズ
-	if err != nil {
-		log.Fatal("can not read request")
-	}
-	fmt.Printf("[Message]\n%s", string(buf[:n]))
-
-	conn.Write([]byte("connected!"))
-
-	conn.Close()
+	// conn.Close()
 }
